@@ -1,0 +1,125 @@
+function Troll9x_Agenda() {
+    add_ux_builder_shortcode('troll9x_agenda', array(
+        'type' => 'container',
+        'name' => __('Agenda '),
+        'category' => __('Content'),
+        'allow' => array('troll9x_agenda_item'),
+        'render' => function($atts, $content = null) {
+            return '<div class="agenda-container">' . do_shortcode($content) . '</div>';
+        }
+    ));
+    add_ux_builder_shortcode('troll9x_agenda_item', array(
+        'name'  => __('Agenda Item'),
+        'category'  => __('Content'),
+        'options' => array(
+            'image' => array(
+                'type' => 'image',
+                'heading' => __('Image'),
+                'default' => '',
+            ),
+            'title' => array(
+                'type' => 'textfield',
+                'heading' => __('Title'),
+                'default' => '',
+            ),
+            'bg_color' => array(
+                'type' => 'colorpicker',
+                'heading' => __('Color Background'),
+                'default' => '',
+            ),
+            'data_aos' => array(
+                'type' => 'textfield',
+                'heading' => __('Data AOS'),
+                'default' => 'flip-left',
+            ),
+            'data_aos_duration' => array(
+                'type' => 'textfield',
+                'heading' => __('Duration'),
+                'default' => '1000',
+            ),
+            'data_aos_delay' => array(
+                'type' => 'textfield',
+                'heading' => __('Delay'),
+                'default' => '200',
+            ),
+            'radius' => array(
+                'type' => 'slider',
+                'heading' => __('Border Radius (px)'),
+                'default' => '10',
+                'min' => '0',
+                'max' => '50',
+            ),
+        ),
+        'render' => function($atts, $content = null) {
+            global $agenda_count;
+            if (!isset($agenda_count)) {
+                $agenda_count = 0;
+            }
+            $agenda_count++;
+
+            // Kiểm tra và lấy giá trị từ $atts
+            $image = isset($atts['image']) ? wp_get_attachment_image_url($atts['image'], 'full') : '';
+            $data_aos = isset($atts['data_aos']) ? $atts['data_aos'] : 'flip-left';
+            $data_aos_duration = isset($atts['data_aos_duration']) ? $atts['data_aos_duration'] : '1000';
+            $data_aos_delay = isset($atts['data_aos_delay']) ? $atts['data_aos_delay'] : '200';
+
+            $style = isset($atts['bg_color']) ? 'background-color:' . esc_attr($atts['bg_color']) . ';' : '';
+            if (isset($atts['radius'])) {
+                $style .= ' border-radius: ' . esc_attr($atts['radius']) . 'px;';
+            }
+
+            $item_html = '
+                <div class="step aos-init aos-animate" data-aos="' . esc_attr($data_aos) . '" data-aos-duration="' . esc_attr($data_aos_duration) . '" data-aos-delay="' . esc_attr($data_aos_delay) . '" id="step' . esc_attr($agenda_count) . '" style="' . esc_attr($style) . '">
+                    ' . (!empty($image) ? '<img src="' . esc_url($image) . '" alt="' . esc_attr($atts['title']) . '">' : '') . '
+                    <span class="text-agenda">' . esc_html($atts['title']) . '</span>
+                    <div class="agenda-arrow"></div>
+                </div>               
+            ';
+            return $item_html;
+        },
+    ));
+}
+
+add_action('ux_builder_setup', 'Troll9x_Agenda');
+
+function troll9x_agenda_func($params, $content = null) {
+    return '<div class="agenda-container">' . do_shortcode($content) . '</div>';
+}
+
+add_shortcode('troll9x_agenda', 'troll9x_agenda_func');
+
+function troll9x_agenda_item_func($params, $content = null) {
+    global $agenda_count;
+    if (!isset($agenda_count)) {
+        $agenda_count = 0;
+    }
+    $agenda_count++;
+
+    $atts = shortcode_atts(array(
+        'image' => '',
+        'title' => '',
+        'bg_color' => '',
+        'radius' => '',
+        'data_aos' => 'flip-left',
+        'data_aos_duration' => '1000',
+        'data_aos_delay' => '200',
+    ), $params);
+
+    $image_url = wp_get_attachment_image_url($atts['image'], 'full');
+    $style = isset($atts['bg_color']) ? 'background-color: ' . esc_attr($atts['bg_color']) . ';' : '';
+    if (isset($atts['radius'])) {
+        $style .= ' border-radius: ' . esc_attr($atts['radius']) . 'px;';
+    }
+
+    $item_html = '
+            <div class="step aos-init aos-animate" data-aos="' . esc_attr($atts['data_aos']) . '" data-aos-duration="' . esc_attr($atts['data_aos_duration']) . '" data-aos-delay="' . esc_attr($atts['data_aos_delay']) . '" id="step' . esc_attr($agenda_count) . '" style="' . esc_attr($style) . '">
+            ' . (!empty($image_url) ? '<img src="' . esc_url($image_url) . '" alt="' . esc_attr($atts['title']) . '">' : '') . '
+            <span class="text-agenda"><br>' . esc_html($atts['title']) . '</span>
+            <div class="agenda-arrow"></div>
+        </div>               
+    ';
+    return $item_html;
+}
+
+add_shortcode('troll9x_agenda_item', 'troll9x_agenda_item_func');
+?>
